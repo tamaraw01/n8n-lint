@@ -1,0 +1,121 @@
+{
+  "name": "Clean Lead Intake",
+  "active": false,
+  "settings": {
+    "errorWorkflow": "wf_global_error_handler"
+  },
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [100, 200],
+      "parameters": {
+        "path": "lead-intake",
+        "httpMethod": "POST",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "n2",
+      "name": "Dedupe Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [320, 200],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.headers['x-idempotency-key'] }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Upsert CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [540, 200],
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CRM_API_URL + '/leads' }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__SCRUBBED_CREDENTIAL_ID__",
+          "name": "CRM Auth"
+        }
+      }
+    },
+    {
+      "id": "n4",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 140],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}"
+      }
+    },
+    {
+      "id": "n5",
+      "name": "Error Escalation",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [760, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Dedupe Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe Check": {
+      "main": [
+        [
+          {
+            "node": "Upsert CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert CRM": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

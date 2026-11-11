@@ -1,0 +1,7 @@
+- id: n8n-lint
+  name: n8n-lint workflow check
+  description: Static security, URL, reliability, and schema checks for n8n workflow JSON files.
+  entry: n8n-lint scan
+  language: python
+  files: \.json$
+  types: [json]

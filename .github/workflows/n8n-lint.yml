@@ -1,0 +1,26 @@
+name: n8n-lint
+
+on:
+  pull_request:
+    paths:
+      - "workflows/**/*.json"
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run n8n-lint
+        run: |
+          PYTHONPATH=src python3 -m n8n_lint scan workflows/ --format sarif --output n8n-lint.sarif --no-color
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: n8n-lint.sarif
