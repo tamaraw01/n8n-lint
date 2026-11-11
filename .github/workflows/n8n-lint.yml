@@ -11,14 +11,18 @@ on:
 jobs:
   lint-workflows:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install n8n-lint
+        run: pip install git+https://github.com/tamaraw01/n8n-lint@v1.0.0
       - name: Run n8n-lint
-        run: |
-          PYTHONPATH=src python3 -m n8n_lint scan workflows/ --format sarif --output n8n-lint.sarif --no-color
+        run: n8n-lint scan workflows/ --format sarif --output n8n-lint.sarif --no-color
       - name: Upload SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3

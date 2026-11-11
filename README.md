@@ -6,7 +6,15 @@ Static CLI linter and secret redactor for exported n8n workflow JSON files.
 
 ## Quickstart
 
-Install or run directly with Python 3.10+:
+Requires Python 3.10+. This tool is not published on PyPI or npm, so `pip install n8n-lint`, `uvx n8n-lint`, and `npx n8n-lint` will not install it. Install from the GitHub tag instead:
+
+```bash
+pipx install git+https://github.com/tamaraw01/n8n-lint@v1.0.0
+# or, inside a virtualenv:
+pip install git+https://github.com/tamaraw01/n8n-lint@v1.0.0
+```
+
+From an extracted release ZIP (GitHub release or Gumroad download):
 
 ```bash
 ./install.sh
@@ -94,7 +102,27 @@ Exit codes:
 
 ## CI and pre-commit integration
 
-A ready-to-use GitHub Actions workflow is included at `.github/workflows/n8n-lint.yml` (runs `n8n-lint` and uploads SARIF results to GitHub Code Scanning).
+A ready-to-use GitHub Actions workflow is included at `.github/workflows/n8n-lint.yml` (runs `n8n-lint` and uploads SARIF results to GitHub Code Scanning). Copy this job into your own repo to lint exported workflows under `workflows/` on every pull request:
+
+```yaml
+jobs:
+  n8n-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install git+https://github.com/tamaraw01/n8n-lint@v1.0.0
+      - run: n8n-lint scan workflows/ --format sarif --output n8n-lint.sarif --no-color
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: n8n-lint.sarif
+```
 
 A pre-commit hook definition is included at `.pre-commit-hooks.yaml`:
 
@@ -159,6 +187,10 @@ Build the deterministic release archive and SHA-256 checksum under `dist/`:
 ```bash
 python3 scripts/build_release.py
 ```
+
+## Name note
+
+This project (`tamaraw01/n8n-lint`) is not affiliated with the PyPI package `n8n-lint` ([capp3/n8n_lint](https://github.com/capp3/n8n_lint)) or with [lorenzespinosa/n8n-lint](https://github.com/lorenzespinosa/n8n-lint). They are separate tools that share the name.
 
 ## License
 
