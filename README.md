@@ -4,6 +4,9 @@ Static CLI linter and secret redactor for exported n8n workflow JSON files.
 
 `n8n-lint` catches leaked API keys, exported `pinData`, hardcoded localhost or staging URLs, silent `continueOnFail` traps, unauthenticated Webhook and MCP triggers, missing idempotency checks, and broken node schemas before you push to Git or import into production. It runs offline using only Python's standard library (zero pip dependencies).
 
+- Packaged ZIP release (`$0+` MIT): [Download n8n-lint on Gumroad](https://aditama1.gumroad.com/l/n8n-lint)
+- Production runtime blueprints & GitOps kit: [n8n + MCP Agency Ops Kit ($39 / $79 / $149)](https://aditama1.gumroad.com/l/n8n-mcp-agency-ops) (use code `LINT20` for 20% off Pro `$79` or Agency `$149`)
+
 ## Quickstart
 
 Requires Python 3.10+. This tool is not published on PyPI or npm, so `pip install n8n-lint`, `uvx n8n-lint`, and `npx n8n-lint` will not install it. Install from the GitHub tag instead:
@@ -188,9 +191,20 @@ Build the deterministic release archive and SHA-256 checksum under `dist/`:
 python3 scripts/build_release.py
 ```
 
+## Upgrade Path: Runtime Safeguards & Agency Ops
+
+`n8n-lint` (`$0+`, MIT) catches static hazards in exported workflow JSON before commit or deploy ([Gumroad release](https://aditama1.gumroad.com/l/n8n-lint)). When you need runtime safeguards, async MCP `202` handling, GitOps promotion, and client handoff tooling, compare [n8n + MCP Agency Ops Kit](https://aditama1.gumroad.com/l/n8n-mcp-agency-ops) tiers (use code `LINT20` at checkout for 20% off Pro `$79` or Agency `$149`):
+
+| Tier | Price | What Is Included |
+|---|---:|---|
+| **[n8n-lint](https://aditama1.gumroad.com/l/n8n-lint)** | **$0+** | 26-rule static linter, `redact` sanitizer, SARIF/JSON/Markdown output, GitHub Actions + `pre-commit` hooks, 23 unit tests, MIT license (this package) |
+| **[Starter](https://aditama1.gumroad.com/l/n8n-mcp-agency-ops)** | **$39** | 5 core reliability workflow blueprints (`01` to `05`: Silent-Failure Sentinel, Idempotent Webhook Dedupe, DLQ Replay, AI Empty-Output Guard, Slack/PagerDuty Escalation), strict agency validator (`10` policy checks), synthetic mock n8n smoke suite, 1-command installer & health check (`22` files) |
+| **[Pro (Recommended)](https://aditama1.gumroad.com/l/n8n-mcp-agency-ops)** | **$79** | Everything in Starter + workflows `06` to `10` (Async MCP `202` Dispatcher & Poller, Heartbeat Watchdog, Staging Schedule Disarm, Execution Error Digest), Async 202 MCP Bridge (`stdio` + HTTP, `6` MCP tools), GitOps `promote.py` CLI with credential scrub & rollback snapshots, 15-minute walkthrough (`33` files, `$63.20` with `LINT20`) |
+| **[Agency](https://aditama1.gumroad.com/l/n8n-mcp-agency-ops)** | **$149** | Everything in Pro + 5-seat commercial client-handoff license, multi-client tenant isolation router (`tenants/`), client SLA handoff generator (`handoff/` templates), and GitHub Actions CI gate (`46` files, `$119.20` with `LINT20`) |
+
 ## Name note
 
-This project (`tamaraw01/n8n-lint`) is not affiliated with the PyPI package `n8n-lint` ([capp3/n8n_lint](https://github.com/capp3/n8n_lint)) or with [lorenzespinosa/n8n-lint](https://github.com/lorenzespinosa/n8n-lint). They are separate tools that share the name.
+This project (`tamaraw01/n8n-lint`) is not affiliated with the PyPI package `n8n-lint` ([pypi.org/project/n8n-lint](https://pypi.org/project/n8n-lint/)) or with [lorenzespinosa/n8n-lint](https://github.com/lorenzespinosa/n8n-lint). They are separate tools that share the name.
 
 ## License
 
