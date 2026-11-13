@@ -76,36 +76,73 @@ SUMMARY: 6 error(s), 11 warning(s) across 1 file(s)
 
 ## Commands
 
-Scan files or directories recursively:
+### `scan`
+
+Scan one or more workflow JSON files or directories recursively:
 
 ```bash
 n8n-lint scan workflows/
 n8n-lint scan workflows/ --strict --format json
 n8n-lint scan workflows/ --format sarif --output n8n-lint.sarif
 n8n-lint scan workflows/ --format markdown --ignore REL002,URL001
+n8n-lint scan path1.json path2/ path3.json
 ```
+
+When passing a directory, `scan` discovers all `*.json` files while automatically skipping `.git`, `.venv`, `venv`, `node_modules`, `__pycache__`, `dist`, and `build`.
+
+If invoked without an explicit subcommand (such as `n8n-lint workflows/`), the CLI automatically routes to `scan`.
+
+Supported options:
+- `paths`: one or more files or directories to inspect.
+- `--format {text,json,sarif,markdown}`: report output format (default: `text`).
+- `--output <path>`: write report output to a file instead of stdout.
+- `--strict`: exit with code `1` on warnings in addition to errors.
+- `--ignore <rules>`: comma-separated list of rule IDs to suppress (case-insensitive, e.g. `--ignore REL002,URL001`).
+- `--no-color`: disable ANSI color output (also honored when `NO_COLOR` environment variable is set or stdout is not a tty).
+
+### `redact`
 
 Scrub secrets, `pinData`, and credential IDs before sharing or committing:
 
 ```bash
+# Write redacted JSON to a new file
 n8n-lint redact workflow.json --output workflow.redacted.json --deactivate
+
+# Overwrite the input file in place
+n8n-lint redact workflow.json --in-place --deactivate
+
+# Print redacted JSON to stdout for piping
+n8n-lint redact workflow.json --deactivate | jq .
 ```
 
-List all 26 built-in rules:
+Redaction details:
+- **`pinData`**: reset to an empty `{}` object across all nodes to remove captured execution snapshots.
+- **Credential objects**: replaces `id` with `"__SCRUBBED_CREDENTIAL_ID__"` and scrubs any fields other than `name` to `"__REDACTED__"`.
+- **Header parameters**: scrubs `Authorization`, `x-api-key`, `x-auth-token`, and `api-key` header values to `"__REDACTED__"`.
+- **Sensitive parameters**: scrubs literal values matching token formats (Anthropic, OpenAI, AWS, GitHub, Slack, Stripe, PEM private keys, JWTs) or sensitive key names.
+- **Dynamic expressions preserved**: values starting with `=` and containing `{{` or `$` (such as `={{ $env.SECRET }}`) are recognized as expressions and preserved.
+- **`--deactivate`**: sets top-level `"active": false` and marks `scheduleTrigger` and `cron` nodes with `"disabled": true` so workflows cannot fire accidentally after import.
+
+### `rules`
+
+List all 26 built-in rules with rule ID, severity, category, and remediation details:
 
 ```bash
 n8n-lint rules
 n8n-lint rules --json
 ```
 
-Exit codes:
+### Exit codes
+
 - `0`: zero errors (and zero warnings when `--strict` is set)
 - `1`: one or more errors (or warnings under `--strict`)
 - `2`: invalid arguments, missing path, or no JSON files found
 
 ## CI and pre-commit integration
 
-A ready-to-use GitHub Actions workflow is included at `.github/workflows/n8n-lint.yml` (runs `n8n-lint` and uploads SARIF results to GitHub Code Scanning). Copy this job into your own repo to lint exported workflows under `workflows/` on every pull request:
+A ready-to-use GitHub Actions workflow is included at `.github/workflows/n8n-lint.yml` (runs `n8n-lint` and uploads SARIF results to GitHub Code Scanning). Copy this job into your own repo to lint exported workflows under `workflows/` on every pull request.
+
+Note: In the workflow below, `workflows/` represents the directory containing your exported workflow JSON files. Adjust this path to match your repository structure (such as `examples/` or repository root), or ensure the target directory exists before running `n8n-lint scan` to avoid exit code 2.
 
 ```yaml
 jobs:
