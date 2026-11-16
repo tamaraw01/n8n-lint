@@ -1,0 +1,82 @@
+{
+  "name": "Broken Staging Export",
+  "active": true,
+  "pinData": {
+    "Webhook Trigger": [
+      {
+        "json": {
+          "email": "founder@client-staging.example"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 200],
+      "parameters": {
+        "path": "lead-intake",
+        "httpMethod": "POST",
+        "authentication": "none"
+      }
+    },
+    {
+      "id": "n2",
+      "name": "Call Staging API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [340, 200],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/api/leads",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sk-ant-api03-examplekey1234567890"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [560, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/T0000/B0000/DEMOKEY123"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call Staging API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Staging API": {
+      "main": [
+        [
+          {
+            "node": "Missing Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+name: Candidate runner verification
+on:
+  push:
+    branches: [qa/candidate-v1-1-0-runner]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify candidate file hashes
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          base = pathlib.Path('qa-candidate')
+          manifest = json.loads(pathlib.Path('qa-manifest.json').read_text())
+          actual = {str(p.relative_to(base)): hashlib.sha256(p.read_bytes()).hexdigest() for p in base.rglob('*') if p.is_file()}
+          assert actual == manifest, (actual, manifest)
+          print('Candidate file hashes verified:', len(actual))
+          PY
+      - name: Clean workflow
+        id: clean
+        uses: ./qa-candidate
+        with:
+          path: qa-candidate/examples/clean_workflow.json
+      - name: Broken workflow
+        id: broken
+        continue-on-error: true
+        uses: ./qa-candidate
+        with:
+          path: qa-candidate/examples/broken_workflow.json
+      - name: Assert broken workflow failed
+        if: always()
+        env:
+          CLEAN: ${{ steps.clean.outcome }}
+          BROKEN: ${{ steps.broken.outcome }}
+        run: |
+          printf 'clean=%s broken=%s\n' "$CLEAN" "$BROKEN"
+          test "$CLEAN" = success && test "$BROKEN" = failure
